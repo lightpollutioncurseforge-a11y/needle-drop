@@ -211,6 +211,8 @@ a { color: inherit; }
 .needle { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--red); box-shadow: 0 0 10px rgba(229, 72, 58, .8); transform: translateX(-1px); }
 .fine { display: flex; align-items: center; gap: 10px; justify-content: space-between; padding: 10px 12px 0; }
 .fine span { font-size: 13px; color: var(--muted); text-align: center; }
+.hint-touch { display: none; }
+@media (hover: none) and (pointer: coarse) { .hint-keys { display: none; } .hint-touch { display: inline; } }
 .knob {
   width: 44px; height: 44px; border-radius: 50%; cursor: pointer; flex: none;
   border: 1px solid #000; color: var(--ink-2); font: 600 15px var(--label);
@@ -256,12 +258,12 @@ a { color: inherit; }
 
 /* sheets: intro and the end-of-round crate */
 .sheet {
-  position: fixed; inset: 0; z-index: 20; display: grid; overflow-y: auto;
+  position: fixed; inset: 0; z-index: 20; display: grid; grid-template-columns: minmax(0, 1fr); overflow-y: auto;
   background: rgba(8, 6, 5, .82); backdrop-filter: blur(3px);
   padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
 }
 .card-sheet {
-  width: min(680px, 100%); margin: auto; background: linear-gradient(180deg, var(--console-2), var(--console));
+  box-sizing: border-box; width: min(680px, 100%); margin: auto; background: linear-gradient(180deg, var(--console-2), var(--console));
   border: 1px solid var(--edge); border-radius: 12px; padding: 28px 28px 24px;
   box-shadow: 0 40px 90px -30px #000;
 }
@@ -306,6 +308,7 @@ a { color: inherit; }
     bottom: max(12px, env(safe-area-inset-bottom, 0px));
   }
   .next-key:disabled { display: none; }
+  .log { scroll-margin-bottom: 96px; }   /* keep the log card's last line above the Next bar */
   .tag { order: 3; flex-basis: 100%; }
   #tt { max-height: 40vh; }
   .transport { grid-template-columns: auto auto; }
@@ -440,7 +443,8 @@ a { color: inherit; }
         </div>
         <div class="fine">
           <button class="knob" id="yMinus" type="button" aria-label="One year earlier">−1</button>
-          <span>Drag the dial, or use the arrow keys</span>
+          <span class="hint-keys">Drag the dial, or use the arrow keys</span>
+          <span class="hint-touch">Drag the dial, or tap −1 / +1</span>
           <button class="knob" id="yPlus" type="button" aria-label="One year later">+1</button>
         </div>
       </div>
