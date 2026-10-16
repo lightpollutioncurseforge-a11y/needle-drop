@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Needle Drop</title>
+<meta name="description" content="Hear ten seconds of a record from anywhere in the world since 1930. Guess when and where it was made.">
+<meta property="og:title" content="Needle Drop">
+<meta property="og:description" content="Discover the world’s music, one record at a time. Hear ten seconds, then guess when and where it was made.">
+<meta name="theme-color" content="#110d0b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%230c0a09'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23ffffff' stroke-opacity='.15'/%3E%3Ccircle cx='32' cy='32' r='11' fill='%23ffb347'/%3E%3Ccircle cx='32' cy='32' r='2' fill='%230c0a09'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Limelight&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=Barlow+Condensed:wght@500;600;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: a late-night studio console. The turntable deck sits on the left; the map
+   (backlit like shortwave dial glass) and the year tuner sit on the right. Results are
+   typed onto a cream station-log card. One committed dark look: it is always night here. */
+:root {
+  --room: #110d0b;          /* studio at 2 a.m. */
+  --slat: #171210;
+  --console: #211915;       /* walnut console */
+  --console-2: #2b211b;
+  --edge: rgba(255, 214, 160, .09);
+  --ink: #f1e6d2;           /* warm tube-glow cream */
+  --ink-2: #cdbfa7;
+  --muted: #8f806b;
+  --amber: #ffb347;         /* dial backlight: your guesses */
+  --amber-dim: rgba(255, 179, 71, .16);
+  --red: #e5483a;           /* ON AIR lamp, dial needle */
+  --eye: #7ee08f;           /* magic-eye tuning tube: the answer */
+  --eye-dim: rgba(126, 224, 143, .18);
+  --paper: #efe5d0;         /* station log */
+  --paper-ink: #2a211a;
+  --paper-rule: rgba(42, 33, 26, .16);
+  --glass: #18120e;
+  --land: #3b2f25;
+  --border-line: #5b4a38;
+  --grat: rgba(255, 179, 71, .07);
+  --vinyl: #0c0a09;
+  --display: "Limelight", "Didot", "Bodoni 72", Georgia, serif;
+  --label: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --sans: "Barlow", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --type: "Courier Prime", "Courier New", ui-monospace, monospace;
+  color-scheme: dark;
+}
+
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background-color: var(--room);
+  background-image:
+    radial-gradient(70% 55% at 18% -8%, rgba(255, 170, 80, .10), transparent 70%),
+    repeating-linear-gradient(90deg, var(--slat) 0 26px, var(--room) 26px 29px);
+  background-attachment: fixed;
+  color: var(--ink);
+  font: 16px/1.5 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+.app {
+  max-width: 1320px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px;
+}
+.lbl { font: 600 12px/1 var(--label); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+
+/* ---------- header ---------- */
+.bar {
+  display: flex; align-items: center; gap: 14px 22px; flex-wrap: wrap;
+  padding-block: 18px 14px; border-bottom: 1px solid var(--edge);
+}
+.mark { display: flex; align-items: center; gap: 14px; }
+.logo {
+  font: 400 34px/1 var(--display); color: var(--amber); letter-spacing: .02em; margin: 0;
+  text-shadow: 0 0 18px rgba(255, 179, 71, .35);
+}
+.onair {
+  font: 700 12px/1 var(--label); letter-spacing: .22em; text-transform: uppercase;
+  padding: 6px 9px 5px; border-radius: 3px; border: 1px solid rgba(229, 72, 58, .35);
+  color: rgba(229, 72, 58, .45); background: rgba(229, 72, 58, .05);
+  transition: color .2s, background .2s, box-shadow .2s;
+}
+.onair.lit { color: #fff3ef; background: var(--red); border-color: var(--red); box-shadow: 0 0 22px rgba(229, 72, 58, .6); }
+.tag { margin: 0; color: var(--ink-2); font-size: 15px; flex: 1 1 260px; }
+.meter { display: flex; gap: 24px; align-items: flex-end; }
+.meter div { display: grid; gap: 4px; }
+.meter strong { font: 600 24px/1 var(--label); color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: .03em; }
+
+/* ---------- stage ---------- */
+.stage {
+  display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.2fr); gap: 22px;
+  padding-top: 20px; align-items: start;
+}
+.deck, .console { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+/* the deck column stays put while the console scrolls, so Next is always in the same spot */
+.deck { position: sticky; top: 12px; }
+.next-key { flex: none; }
+.panel {
+  background: linear-gradient(180deg, var(--console-2), var(--console));
+  border: 1px solid var(--edge); border-radius: 10px;
+  box-shadow: 0 1px 0 rgba(255, 230, 190, .05) inset, 0 24px 50px -30px rgba(0, 0, 0, .9);
+}
+.panel-h {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  padding: 12px 16px 0;
+}
+.panel-h h2 { margin: 0; font: 700 14px/1 var(--label); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
+.read { font: 600 15px/1.2 var(--label); letter-spacing: .06em; color: var(--amber); font-variant-numeric: tabular-nums; }
+.read.idle { color: var(--muted); font-weight: 500; letter-spacing: .02em; }
+
+/* turntable */
+.plinth { padding: 14px; }
+#tt { display: block; width: 100%; height: auto; max-height: min(56vh, max(220px, calc(100vh - 440px))); }
+#disc { transform-box: view-box; transform-origin: 190px 190px; }
+#disc.spin { animation: spin 1.8s linear infinite; }  /* 33⅓ rpm */
+@keyframes spin { to { transform: rotate(360deg); } }
+#arm { transform-box: view-box; transform-origin: 368px 52px; transition: transform .9s cubic-bezier(.3, .7, .3, 1); }
+#arm.down { transform: rotate(24deg); }
+
+.transport { display: grid; grid-template-columns: auto auto 1fr; gap: 14px; align-items: center; padding: 0 16px 16px; }
+.key {
+  min-width: 112px; height: 58px; padding: 0 14px; border-radius: 6px; cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, .6);
+  background: linear-gradient(180deg, #3a3029, #2a221c);
+  box-shadow: 0 2px 0 #0b0806, 0 1px 0 rgba(255, 230, 190, .08) inset;
+  font: 700 15px/1.05 var(--label); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2);
+  display: grid; place-items: center; text-align: center;
+}
+.key:active { transform: translateY(1px); box-shadow: 0 1px 0 #0b0806; }
+.key:disabled { opacity: .45; cursor: not-allowed; }
+.key.play { color: #10220f; background: linear-gradient(180deg, #a8f0b3, var(--eye)); box-shadow: 0 2px 0 #0b0806, 0 0 18px rgba(126, 224, 143, .35); }
+.key.play.on { color: #2b0905; background: linear-gradient(180deg, #ff8a7c, var(--red)); box-shadow: 0 2px 0 #0b0806, 0 0 20px rgba(229, 72, 58, .5); }
+.clock { display: grid; gap: 4px; justify-items: start; }
+.clock strong { font: 600 30px/1 var(--label); color: var(--amber); font-variant-numeric: tabular-nums; text-shadow: 0 0 12px rgba(255, 179, 71, .35); }
+.vus { display: flex; gap: 8px; justify-content: flex-end; min-width: 0; }
+.vu { width: 50%; max-width: 128px; height: auto; display: block; }
+.vu .face { fill: #e9d8b4; }
+.vu .scale { fill: none; stroke: #3a2c1f; stroke-width: 1.2; }
+.vu .hot { fill: none; stroke: var(--red); stroke-width: 3; }
+.vu text { font: 600 8px var(--label); fill: #3a2c1f; letter-spacing: .1em; }
+.vu .ndl { stroke: #1b130d; stroke-width: 1.6; stroke-linecap: round; }
+
+.peek { padding: 12px 16px 14px; display: grid; gap: 8px; }
+.peek p { margin: 0; font-size: 14px; color: var(--muted); max-width: 52ch; }
+.applelink {
+  justify-self: start; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  border: 1px solid rgba(241, 230, 210, .28); background: #000; color: #fff; border-radius: 8px;
+  padding: 8px 14px; font: 600 14px/1 var(--sans); text-decoration: none;
+}
+.applelink:hover { border-color: rgba(241, 230, 210, .6); }
+/* Apple's official badge, unaltered: 40px tall (minimum 30), clear space ≥ 1/10 of its height */
+.badge-link { justify-self: start; display: inline-block; line-height: 0; padding: 4px; margin: -4px; border-radius: 10px; }
+.badge-link img { height: 40px; width: auto; display: block; }
+.applelink small { font-weight: 400; opacity: .75; font-size: 12px; }
+.confirm { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.ghost { background: none; border: 1px solid var(--edge); color: var(--ink-2); border-radius: 6px; padding: 7px 12px; cursor: pointer; font-size: 14px; }
+.ghost:hover { border-color: var(--muted); }
+.peeked { color: var(--red); font: 600 13px var(--label); letter-spacing: .12em; text-transform: uppercase; }
+
+/* map, styled as backlit dial glass */
+.mapwrap {
+  position: relative; margin: 10px 12px 12px; height: min(44vh, 420px); min-height: 250px;
+  background: var(--glass); border-radius: 6px; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .6) inset, 0 0 40px rgba(255, 170, 80, .05) inset;
+}
+#map { width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; }
+#map .sphere { fill: var(--glass); }
+#map .grat { fill: none; stroke: var(--grat); stroke-width: 1; vector-effect: non-scaling-stroke; }
+#map .land { fill: var(--land); }
+#map .borders { fill: none; stroke: var(--border-line); stroke-width: .6; vector-effect: non-scaling-stroke; }
+#map .arc { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-dasharray: 4 5; vector-effect: non-scaling-stroke; opacity: .8; }
+.pin-guess path { fill: var(--amber); stroke: var(--glass); stroke-width: 1.5; }
+.pin-guess circle { fill: var(--glass); }
+.pin-true .halo { fill: var(--eye); opacity: .2; }
+.pin-true .dot { fill: var(--eye); stroke: var(--glass); stroke-width: 2.5; }
+.mapctl { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.mapctl button {
+  width: 32px; height: 32px; border-radius: 5px; cursor: pointer; line-height: 1;
+  border: 1px solid var(--edge); background: rgba(33, 25, 21, .92); color: var(--ink-2); font: 600 17px var(--label);
+}
+.maphint {
+  position: absolute; left: 10px; bottom: 10px; pointer-events: none;
+  font: 500 13px var(--label); letter-spacing: .08em; color: var(--amber); opacity: .8;
+}
+
+/* year tuner */
+.tuner { padding-bottom: 14px; }
+.dial {
+  position: relative; margin: 12px 12px 0; height: 78px; border-radius: 6px; cursor: ew-resize;
+  background: linear-gradient(180deg, #2a1d12, #1a120c 60%, #1d140d);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .7) inset, 0 0 30px rgba(255, 170, 80, .08) inset;
+  touch-action: none; user-select: none; -webkit-user-select: none; overflow: hidden;
+}
+.scale { position: absolute; inset: 0 18px; }
+.tick { position: absolute; bottom: 14px; width: 1px; height: 9px; background: rgba(255, 196, 120, .4); transform: translateX(-.5px); }
+.tick.mid { height: 15px; background: rgba(255, 196, 120, .55); }
+.tick.major { height: 24px; background: rgba(255, 196, 120, .85); }
+.tlab {
+  position: absolute; top: 9px; transform: translateX(-50%);
+  font: 600 14px/1 var(--label); letter-spacing: .04em; color: rgba(255, 196, 120, .9);
+  text-shadow: 0 0 8px rgba(255, 170, 80, .4);
+}
+.unit { position: absolute; right: 8px; bottom: 4px; font: 600 9px var(--label); letter-spacing: .2em; color: var(--muted); }
+.band { position: absolute; top: 0; bottom: 0; background: var(--eye-dim); border-left: 1px solid var(--eye); border-right: 1px solid var(--eye); }
+.truth { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--eye); box-shadow: 0 0 10px var(--eye); transform: translateX(-1px); }
+.needle { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--red); box-shadow: 0 0 10px rgba(229, 72, 58, .8); transform: translateX(-1px); }
+.fine { display: flex; align-items: center; gap: 10px; justify-content: space-between; padding: 10px 12px 0; }
+.fine span { font-size: 13px; color: var(--muted); text-align: center; }
+.knob {
+  width: 44px; height: 44px; border-radius: 50%; cursor: pointer; flex: none;
+  border: 1px solid #000; color: var(--ink-2); font: 600 15px var(--label);
+  background: radial-gradient(circle at 35% 30%, #5a4a3d, #241b15 70%);
+  box-shadow: 0 2px 0 #0b0806, 0 0 0 4px rgba(255, 230, 190, .04);
+}
+.knob:disabled { opacity: .4; cursor: not-allowed; }
+
+.logit {
+  height: 60px; border-radius: 8px; cursor: pointer; border: 1px solid #000;
+  background: linear-gradient(180deg, #ffc56b, var(--amber)); color: #2a1606;
+  font: 700 18px/1 var(--label); letter-spacing: .2em; text-transform: uppercase;
+  box-shadow: 0 2px 0 #0b0806, 0 0 24px rgba(255, 179, 71, .25);
+}
+.logit:disabled { background: var(--console-2); color: var(--muted); box-shadow: 0 2px 0 #0b0806; cursor: not-allowed; }
+
+/* station log card */
+.log {
+  background: var(--paper); color: var(--paper-ink); border-radius: 3px; padding: 18px 20px 16px;
+  font-family: var(--type); box-shadow: 0 24px 50px -24px rgba(0, 0, 0, .9);
+  border-top: 6px solid var(--red);
+}
+.log .eyebrow { font: 700 12px/1 var(--type); letter-spacing: .12em; text-transform: uppercase; color: #7a6a58; }
+.log h3 { font: 400 26px/1.15 var(--display); margin: 8px 0 2px; text-wrap: balance; color: var(--paper-ink); }
+.log .by { font-size: 17px; margin: 0; }
+.log .facts { font-size: 15px; margin: 4px 0 12px; color: #4f4234; }
+.rows { display: grid; gap: 4px; border-top: 1px dashed rgba(42, 33, 26, .4); padding-top: 10px; }
+.row { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; gap: 10px; font-size: 15px; align-items: baseline; }
+.row b { font-weight: 700; }
+.row .pts { font-weight: 700; font-variant-numeric: tabular-nums; }
+.row.total { border-top: 1px dashed rgba(42, 33, 26, .4); padding-top: 6px; margin-top: 4px; }
+.log .acts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; align-items: center; }
+.next {
+  border: 0; border-radius: 6px; padding: 11px 18px; cursor: pointer;
+  background: var(--paper-ink); color: var(--paper); font: 700 15px/1 var(--label); letter-spacing: .16em; text-transform: uppercase;
+}
+.stamp { color: #a2321f; font-weight: 700; }
+
+/* footer */
+.foot { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--edge); display: flex; flex-wrap: wrap; gap: 10px 28px; justify-content: space-between; color: var(--muted); font-size: 13px; }
+.foot p { margin: 0; max-width: 70ch; }
+.foot button { background: none; border: 0; padding: 0; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: 13px; }
+
+/* sheets: intro and the end-of-round crate */
+.sheet {
+  position: fixed; inset: 0; z-index: 20; display: grid; overflow-y: auto;
+  background: rgba(8, 6, 5, .82); backdrop-filter: blur(3px);
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.card-sheet {
+  width: min(680px, 100%); margin: auto; background: linear-gradient(180deg, var(--console-2), var(--console));
+  border: 1px solid var(--edge); border-radius: 12px; padding: 28px 28px 24px;
+  box-shadow: 0 40px 90px -30px #000;
+}
+.card-sheet .logo { font-size: clamp(40px, 9vw, 64px); }
+.card-sheet .tag { margin-top: 10px; font-size: 18px; }
+.epi { margin: 22px 0; padding-left: 16px; border-left: 2px solid var(--amber-dim); }
+.epi q { font: italic 400 19px/1.4 var(--type); color: var(--ink); quotes: "“" "”"; }
+.epi .tr { margin: 6px 0 0; color: var(--ink-2); font-size: 15px; }
+.epi cite { display: block; margin-top: 6px; font: 600 13px var(--label); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-style: normal; }
+.how { margin: 0 0 22px; padding: 0; list-style: none; display: grid; gap: 8px; color: var(--ink-2); font-size: 15px; }
+.how li { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 10px; }
+.how b { font: 700 13px/1.6 var(--label); letter-spacing: .16em; text-transform: uppercase; color: var(--amber); }
+.sheet-acts { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.sheet-acts .logit { padding: 0 26px; height: 54px; }
+.stats { color: var(--muted); font-size: 14px; }
+
+.crate { display: grid; gap: 2px; margin: 18px 0 20px; }
+.crate-row {
+  display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 12px; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid var(--edge);
+}
+.crate-row img { width: 52px; height: 52px; border-radius: 3px; object-fit: cover; background: var(--vinyl); display: block; }
+.crate-row .ct { min-width: 0; }
+.crate-row .ct b { display: block; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+.crate-row .ct span { display: block; font-size: 13px; color: var(--muted); }
+.crate-row .ct a { font-size: 13px; color: var(--amber); }
+.crate-row .ct em { font-style: normal; font-size: 12px; color: var(--red); letter-spacing: .08em; text-transform: uppercase; font-family: var(--label); font-weight: 600; margin-left: 8px; }
+.crate-row .cp { font: 600 18px var(--label); font-variant-numeric: tabular-nums; color: var(--ink); text-align: right; }
+.final { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.final strong { font: 600 52px/1 var(--label); color: var(--amber); font-variant-numeric: tabular-nums; text-shadow: 0 0 20px rgba(255, 179, 71, .35); }
+.final span { color: var(--ink-2); }
+.rank { font: 400 26px/1.2 var(--display); color: var(--ink); margin: 6px 0 0; }
+
+@media (max-width: 860px) {
+  .stage { grid-template-columns: minmax(0, 1fr); }
+  .deck { position: static; }
+  .app { padding-bottom: 100px; }
+  /* one column: Next becomes a bar pinned to the bottom of the screen, shown after each guess */
+  .next-key {
+    position: fixed; z-index: 6;
+    left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  }
+  .next-key:disabled { display: none; }
+  .tag { order: 3; flex-basis: 100%; }
+  #tt { max-height: 40vh; }
+  .transport { grid-template-columns: auto auto; }
+  .vus { grid-column: 1 / -1; justify-content: flex-start; }
+  .mapwrap { height: auto; min-height: 0; aspect-ratio: 1.75; max-width: 100%; }
+  .tlab.minor-lab { display: none; }
+}
+@media (max-width: 480px) {
+  .logo { font-size: 28px; }
+  .meter { gap: 16px; }
+  .row { grid-template-columns: 58px minmax(0, 1fr) auto; font-size: 14px; }
+  .card-sheet { padding: 22px 18px 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #disc.spin { animation: none; }
+  #arm { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <div class="mark">
+      <h1 class="logo">Needle Drop</h1>
+      <span class="onair" id="onair">On Air</span>
+    </div>
+    <p class="tag">Discover the world’s music, one record at a time.</p>
+    <div class="meter">
+      <div><span class="lbl">Record</span><strong id="mRec">–</strong></div>
+      <div><span class="lbl">Score</span><strong id="mScore">0</strong></div>
+    </div>
+  </header>
+
+  <main class="stage">
+    <section class="deck" aria-label="Turntable">
+      <div class="panel">
+        <div class="plinth">
+          <svg id="tt" viewBox="0 0 420 380" role="img" aria-label="Turntable with a white-label test pressing">
+            <defs>
+              <radialGradient id="platter" cx="50%" cy="50%" r="50%">
+                <stop offset="0" stop-color="#3a3532"/><stop offset="1" stop-color="#1c1917"/>
+              </radialGradient>
+              <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+                <stop offset=".45" stop-color="#fff" stop-opacity=".07"/>
+                <stop offset=".5" stop-color="#fff" stop-opacity="0"/>
+                <stop offset=".55" stop-color="#fff" stop-opacity=".05"/>
+                <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+              </linearGradient>
+              <clipPath id="labelClip"><circle cx="190" cy="190" r="54"/></clipPath>
+            </defs>
+            <rect x="4" y="4" width="412" height="372" rx="14" fill="#2c2119" stroke="rgba(0,0,0,.6)"/>
+            <rect x="10" y="10" width="400" height="360" rx="10" fill="none" stroke="rgba(255,220,170,.07)"/>
+            <circle cx="190" cy="190" r="168" fill="url(#platter)"/>
+            <g id="disc">
+              <circle cx="190" cy="190" r="160" fill="#0c0a09"/>
+              <g id="grooves"></g>
+              <g id="label">
+                <circle cx="190" cy="190" r="54" fill="#f3ecdc"/>
+                <image id="labelArt" x="136" y="136" width="108" height="108" clip-path="url(#labelClip)" preserveAspectRatio="xMidYMid slice" visibility="hidden"/>
+                <g id="labelText">
+                  <text x="190" y="166" text-anchor="middle" style="font:700 9px var(--label);letter-spacing:.2em" fill="#6b5a46">TEST PRESSING</text>
+                  <line x1="150" y1="174" x2="230" y2="174" stroke="#c9bba1" stroke-width=".8"/>
+                  <text id="matrix" x="190" y="203" text-anchor="middle" style="font:italic 400 22px var(--type)" fill="#2b4a7a">ND – 01</text>
+                  <text x="190" y="226" text-anchor="middle" style="font:600 8px var(--label);letter-spacing:.24em" fill="#8a7a64">SIDE A · 33⅓</text>
+                </g>
+              </g>
+              <circle cx="190" cy="190" r="3.2" fill="#c9c2b8"/>
+            </g>
+            <circle cx="190" cy="190" r="160" fill="url(#sheen)" pointer-events="none"/>
+            <!-- tonearm: pivots at 368,52 -->
+            <circle cx="368" cy="52" r="22" fill="#3b332d" stroke="#000" stroke-opacity=".5"/>
+            <circle cx="368" cy="52" r="9" fill="#9a928a"/>
+            <g id="arm">
+              <rect x="361" y="14" width="14" height="22" rx="3" fill="#6f6760"/>
+              <path d="M368 52 L368 250 Q368 268 356 282" fill="none" stroke="#b9b1a8" stroke-width="5" stroke-linecap="round"/>
+              <rect x="342" y="276" width="22" height="30" rx="3" transform="rotate(32 353 291)" fill="#2a2420" stroke="#0b0806"/>
+            </g>
+            <text x="30" y="358" style="font:600 10px var(--label);letter-spacing:.24em" fill="rgba(255,214,160,.35)">33⅓ · 45</text>
+            <circle cx="392" cy="350" r="5" id="pilot" fill="#3a2a20"/>
+          </svg>
+        </div>
+        <div class="transport">
+          <button class="key play" id="play" type="button" disabled>Drop the<br>needle</button>
+          <div class="clock"><span class="lbl">Clip</span><strong id="clock">0:10</strong></div>
+          <div class="vus" aria-hidden="true">
+            <svg class="vu" id="vuL" viewBox="0 0 120 72"></svg>
+            <svg class="vu" id="vuR" viewBox="0 0 120 72"></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel peek" id="peek">
+        <span class="lbl">Preview from Apple Music</span>
+        <div id="peekIdle">
+          <a class="badge-link" id="peekBtn" href="#" target="_blank" rel="noopener"><img src="img/listen-on-apple-music.svg" alt="Listen on Apple Music" width="137" height="40"></a>
+        </div>
+        <div class="confirm" id="peekConfirm" hidden>
+          <a class="applelink" id="peekLink" href="#" target="_blank" rel="noopener">Open it anyway <small>this record scores 0</small></a>
+          <button class="ghost" id="peekCancel" type="button">Keep guessing</button>
+        </div>
+        <p id="peekNote">Opening the full song shows its name, so this record will score 0.</p>
+        <span class="peeked" id="peekedTag" hidden>Peeked: this record scores 0</span>
+      </div>
+
+      <button class="logit next-key" id="nextBtn" type="button" disabled>Next record</button>
+    </section>
+
+    <section class="console" aria-label="Your guess">
+      <div class="panel">
+        <div class="panel-h"><h2>Where</h2><span class="read idle" id="whereRead">Tap the map to set a pin</span></div>
+        <div class="mapwrap">
+          <svg id="map" aria-label="World map: tap to place your guess"></svg>
+          <div class="mapctl">
+            <button id="zin" type="button" aria-label="Zoom in">+</button>
+            <button id="zout" type="button" aria-label="Zoom out">−</button>
+            <button id="zfit" type="button" aria-label="Show whole world">⤢</button>
+          </div>
+          <div class="maphint" id="maphint">Scroll or pinch to zoom</div>
+        </div>
+      </div>
+
+      <div class="panel tuner">
+        <div class="panel-h"><h2>When</h2><span class="read idle" id="whenRead">Drag the dial to a year</span></div>
+        <div class="dial" id="dial" role="slider" tabindex="0" aria-label="Release year" aria-valuemin="1930" aria-valuemax="2026">
+          <div class="scale" id="scale">
+            <div class="band" id="band" hidden></div>
+            <div class="truth" id="truthTick" hidden></div>
+            <div class="needle" id="needle" hidden></div>
+          </div>
+          <span class="unit">YEAR</span>
+        </div>
+        <div class="fine">
+          <button class="knob" id="yMinus" type="button" aria-label="One year earlier">−1</button>
+          <span>Drag the dial, or use the arrow keys</span>
+          <button class="knob" id="yPlus" type="button" aria-label="One year later">+1</button>
+        </div>
+      </div>
+
+      <button class="logit main" id="submit" type="button" disabled>Log it</button>
+      <div class="log" id="result" hidden></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>Ten-second clips come from Apple Music previews. Every record links to the full track on Apple Music.</p>
+    <p><button id="howBtn" type="button">How to play</button></p>
+  </footer>
+</div>
+
+<div class="sheet" id="sheet" hidden><div class="card-sheet" id="sheetBody" role="dialog" aria-modal="true"></div></div>
+
+<script src="lib/d3.min.js"></script>
+<script src="lib/topojson.min.js"></script>
+<script src="data/world.js"></script>
+<script src="data/songs.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

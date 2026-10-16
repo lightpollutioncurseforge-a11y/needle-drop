@@ -1,0 +1,5 @@
+# Local-only: song pipeline + API cache, map source data, working notes
+build/
+data/world.json
+HANDOFF.md
+.DS_Store
