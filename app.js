@@ -253,6 +253,8 @@
 
   // ---------- map ----------
   let svg, gZoom, gPins, proj, geoPath, zoom, T = d3.zoomIdentity;
+  const MAP_N = 84, MAP_S = -58;
+  let mapFrame = "";
   const world = window.NEEDLE_WORLD;
   const pins = { guess: null, truth: null };
 
@@ -277,11 +279,15 @@
     const key = `${Math.round(w)}x${Math.round(h)}`;
     if (key === lastSize) return;
     lastSize = key;
-    proj = d3.geoNaturalEarth1().fitExtent([[4, 4], [w - 4, h - 4]], { type: "Sphere" });
+    // Mercator, framed from 84°N to 58°S (the poles are infinitely far away on Mercator)
+    proj = d3.geoMercator().fitExtent([[4, 4], [w - 4, h - 4]], { type: "MultiPoint", coordinates: [[-180, MAP_N], [180, MAP_S]] });
+    const [mx0, my0] = proj([-180, MAP_N]), [mx1, my1] = proj([180, MAP_S]);
+    proj.clipExtent([[mx0, my0], [mx1, my1]]);
+    mapFrame = `M${mx0},${my0}H${mx1}V${my1}H${mx0}Z`;
     geoPath = d3.geoPath(proj);
     const land = topojson.feature(world, world.objects.land || world.objects.countries);
     const borders = topojson.mesh(world, world.objects.countries, (a, b) => a !== b);
-    gZoom.select(".sphere").attr("d", geoPath({ type: "Sphere" }));
+    gZoom.select(".sphere").attr("d", mapFrame);
     gZoom.select(".grat").attr("d", geoPath(d3.geoGraticule10()));
     gZoom.select(".land").attr("d", geoPath(land));
     gZoom.select(".borders").attr("d", geoPath(borders));
@@ -294,6 +300,7 @@
     const [x, y] = d3.pointer(e, svg.node());
     const p = T.invert([x, y]);
     const ll = proj.invert(p);
+    if (!ll || ll[1] > MAP_N || ll[1] < MAP_S) return;
     if (!ll || !isFinite(ll[0])) return;
     const back = proj(ll);
     if (!back || Math.hypot(back[0] - p[0], back[1] - p[1]) > 1) return; // outside the globe outline
